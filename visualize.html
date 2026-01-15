@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Attack Tree</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #0b1220;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    svg {
+      width: 100vw;
+      height: 100vh;
+      cursor: grab;
+    }
+
+    .node rect {
+      fill: #0f172a;
+      stroke: #38bdf8;
+      stroke-width: 2;
+      rx: 14;
+      ry: 14;
+    }
+
+    .node--root rect {
+      fill: #991b1b;
+      stroke: #ef4444;
+    }
+
+    .node--atomic rect {
+      fill: #065f46;
+      stroke: #22c55e;
+    }
+
+    .node text {
+      fill: #e5e7eb;
+      font-size: 12px;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      pointer-events: none;
+    }
+
+    .link {
+      fill: none;
+      stroke: #94a3b8;
+      stroke-width: 1.5px;
+    }
+  </style>
+</head>
+
+<body>
+
+<script id="tree-data" type="application/json">
+{{TREE_DATA}}
+</script>
+
+<script>
+  const data = JSON.parse(
+    document.getElementById("tree-data").textContent
+  );
+
+  /* ---- BOX CONFIG ---- */
+  const boxWidth = 380;
+  const minBoxHeight = 70;
+  const maxLines = 4;
+  const lineHeightEm = 1.2;
+
+  const verticalSpacing = 170;
+  const horizontalSpacing = 380;
+
+  const root = d3.hierarchy(data);
+  root.x0 = 0;
+  root.y0 = 0;
+
+  root.descendants().forEach((d, i) => {
+    d.id = i;
+    d._children = d.children;
+    if (d.depth > 1) d.children = null;
+  });
+
+  const treeLayout = d3.tree().nodeSize([horizontalSpacing, verticalSpacing]);
+
+  const svg = d3.select("body").append("svg");
+  const zoomLayer = svg.append("g");
+
+  svg.call(
+    d3.zoom()
+      .scaleExtent([0.2, 2])
+      .on("zoom", (event) => {
+        zoomLayer.attr("transform", event.transform);
+      })
+  );
+
+  const g = zoomLayer.append("g")
+    .attr("transform", "translate(600,120)");
+
+  function update(source) {
+    treeLayout(root);
+
+    const nodes = root.descendants();
+    const links = root.links();
+
+    const node = g.selectAll("g.node")
+      .data(nodes, d => d.id);
+
+    const nodeEnter = node.enter()
+      .append("g")
+      .attr("class", d => {
+        if (d.depth === 0) return "node node--root";
+        if (d.data.is_atomic) return "node node--atomic";
+        return "node";
+      })
+      .attr("transform", `translate(${source.x0},${source.y0})`)
+      .on("click", (_, d) => {
+        if (d.depth > 0) {
+          d.children = d.children ? null : d._children;
+          update(d);
+        }
+      });
+
+    const rect = nodeEnter.append("rect")
+      .attr("width", boxWidth)
+      .attr("x", -boxWidth / 2)
+      .attr("y", -minBoxHeight / 2)
+      .attr("height", minBoxHeight);
+
+    const text = nodeEnter.append("text")
+      .call(wrapText, boxWidth - 40)
+      .text(d => d.data.goal);
+
+    /* Tooltip for full text */
+    text.append("title")
+      .text(d => d.data.goal);
+
+    nodeEnter.each(function () {
+      const t = d3.select(this).select("text");
+      const lines = t.selectAll("tspan").size();
+      const height = Math.max(minBoxHeight, lines * 14 + 20);
+
+      d3.select(this).select("rect")
+        .attr("height", height)
+        .attr("y", -height / 2);
+    });
+
+    nodeEnter.merge(node)
+      .transition()
+      .duration(500)
+      .attr("transform", d => `translate(${d.x},${d.y})`);
+
+    node.exit().remove();
+
+    const link = g.selectAll("path.link")
+      .data(links, d => d.target.id);
+
+    link.enter()
+      .append("path")
+      .attr("class", "link")
+      .merge(link)
+      .transition()
+      .duration(500)
+      .attr("d", d => {
+        const sourceY = d.source.y + 40;
+        const targetY = d.target.y - 40;
+        return `
+          M ${d.source.x},${sourceY}
+          C ${(d.source.x + d.target.x) / 2},${sourceY}
+            ${(d.source.x + d.target.x) / 2},${targetY}
+            ${d.target.x},${targetY}
+        `;
+      });
+
+    link.exit().remove();
+
+    nodes.forEach(d => {
+      d.x0 = d.x;
+      d.y0 = d.y;
+    });
+  }
+
+  /* -------- TEXT WRAP WITH LIMIT -------- */
+  function wrapText(text, width) {
+    text.each(function () {
+      const textSel = d3.select(this);
+      const words = textSel.text().split(/\s+/);
+      let line = [];
+      let lineNumber = 0;
+
+      textSel.text(null);
+
+      let tspan = textSel.append("tspan")
+        .attr("x", 0)
+        .attr("dy", "0em");
+
+      for (let i = 0; i < words.length; i++) {
+        line.push(words[i]);
+        tspan.text(line.join(" "));
+
+        if (tspan.node().getComputedTextLength() > width) {
+          line.pop();
+          tspan.text(line.join(" "));
+          line = [words[i]];
+
+          lineNumber++;
+          if (lineNumber >= maxLines) {
+            tspan.text(tspan.text() + "…");
+            break;
+          }
+
+          tspan = textSel.append("tspan")
+            .attr("x", 0)
+            .attr("dy", lineHeightEm + "em")
+            .text(words[i]);
+        }
+      }
+    });
+  }
+
+  update(root);
+</script>
+
+</body>
+</html>

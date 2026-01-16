@@ -148,7 +148,7 @@ Generates and saves attack trees to MongoDB automatically.
 
 ### Core Functions
 
-#### `generate_attack_tree(surface_goal: str, max_depth: int = 4) -> dict`
+#### `generate_attack_tree(surface_goal: str, max_depth: int = 7) -> dict`
 Generates complete attack tree for a given surface goal.
 - Handles list inputs by extracting first element
 - Returns tree as dictionary for JSON serialization

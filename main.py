@@ -56,7 +56,7 @@ def generate_attack_tree(surface_goal: str, max_depth: int | None = None) -> dic
 
 if __name__ == "__main__":
 
-    SURFACE_GOAL = "Throttle Control System Compromise"
+    SURFACE_GOAL = "Remote Command Injection"
 
     existing = get_tree(SURFACE_GOAL)
 
@@ -64,15 +64,15 @@ if __name__ == "__main__":
         print("✅ Existing tree found\n")
         print(json.dumps(existing, indent=2))
     else:
-        print("⚙️ Generating attack tree (semantic-driven)...\n")
+        print(" Generating attack tree ...\n")
 
         # max_depth=None → pure semantic expansion
         # You can set max_depth=7 if you want a safety cap
         tree = generate_attack_tree(
             SURFACE_GOAL,
-            max_depth=None
+            max_depth=7            
         )
 
         save_tree(SURFACE_GOAL, tree)
-        print("💾 Tree saved successfully\n")
+        print("Tree saved successfully\n")
         print(json.dumps(tree, indent=2))

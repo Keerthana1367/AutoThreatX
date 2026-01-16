@@ -45,6 +45,12 @@
       pointer-events: none;
     }
 
+    .cvss {
+      fill: #22c55e;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
     .link {
       fill: none;
       stroke: #94a3b8;
@@ -55,6 +61,7 @@
 
 <body>
 
+<!-- Streamlit injects JSON here -->
 <script id="tree-data" type="application/json">
 {{TREE_DATA}}
 </script>
@@ -77,6 +84,7 @@
   root.x0 = 0;
   root.y0 = 0;
 
+  // Collapse deeper levels initially
   root.descendants().forEach((d, i) => {
     d.id = i;
     d._children = d.children;
@@ -123,20 +131,33 @@
         }
       });
 
-    const rect = nodeEnter.append("rect")
+    // Rectangle
+    nodeEnter.append("rect")
       .attr("width", boxWidth)
       .attr("x", -boxWidth / 2)
       .attr("y", -minBoxHeight / 2)
       .attr("height", minBoxHeight);
 
+    // Main text (goal + optional CVSS)
     const text = nodeEnter.append("text")
       .call(wrapText, boxWidth - 40)
-      .text(d => d.data.goal);
+      .text(d => {
+        if (d.data.is_atomic && d.data.cvss && d.data.cvss.base_score !== null) {
+          return `${d.data.goal}\nCVSS: ${d.data.cvss.base_score}`;
+        }
+        return d.data.goal;
+      });
 
-    /* Tooltip for full text */
+    // Tooltip (full text)
     text.append("title")
-      .text(d => d.data.goal);
+      .text(d => {
+        if (d.data.is_atomic && d.data.cvss) {
+          return `${d.data.goal}\nCVSS Base Score: ${d.data.cvss.base_score}`;
+        }
+        return d.data.goal;
+      });
 
+    // Adjust box height based on wrapped text
     nodeEnter.each(function () {
       const t = d3.select(this).select("text");
       const lines = t.selectAll("tspan").size();
@@ -154,6 +175,7 @@
 
     node.exit().remove();
 
+    // Links
     const link = g.selectAll("path.link")
       .data(links, d => d.target.id);
 

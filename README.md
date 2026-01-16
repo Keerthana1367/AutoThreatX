@@ -6,7 +6,6 @@ An intelligent attack tree generation system for automotive cybersecurity threat
 
 - **Automated Attack Tree Generation** - Generate attack trees from surface goals using LLM integration
 - **Hierarchical Attack Modeling** - Multi-level attack node representation with parent-child relationships
-- **CVSS Scoring** - Vulnerability assessment with CVSSv3 metrics
 - **Attack Node Atomicity** - Classify atomic vs composite attacks
 - **Persistent Storage** - MongoDB integration for tree persistence
 - **Interactive Visualization** - HTML-based attack tree visualization
@@ -24,7 +23,7 @@ ThreatX/
 ├── validation_rules.py     # Validation rule definitions
 ├── db.py                   # MongoDB database operations
 ├── models/
-│   ├── attacknode.py       # Attack node data model (Pydantic)
+│   ├── attacknode.py       # Attack node data model 
 │   └── __init__.py
 ├── llm/
 │   └── llm_client.py       # LLM API integration

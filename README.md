@@ -28,9 +28,7 @@ ThreatX/
 │   └── __init__.py
 ├── llm/
 │   └── llm_client.py       # LLM API integration
-├── utils.py                # Utility functions
 ├── config.py               # Configuration settings
-├── test.py                 # Unit tests
 ├── visualize.html          # Attack tree visualization template
 └── venv/                   # Python virtual environment
 ```
@@ -39,8 +37,8 @@ ThreatX/
 
 ### Prerequisites
 - Python 3.9+
-- MongoDB instance (local or cloud)
-- LLM API key (OpenAI, Claude, Groq, etc.)
+- MongoDB instance (local or cloud) with connection URI
+- Groq API key (get from https://console.groq.com)
 
 ### Setup
 
@@ -58,23 +56,32 @@ ThreatX/
 
 3. **Install dependencies**
    ```bash
-   pip install -r requirements.txt
+   pip install streamlit pymongo pydantic requests cvss
    ```
 
 4. **Configure environment variables**
-   Create a `.env` file in the project root:
+   Set the following environment variables:
+   ```bash
+   $env:MONGO_URI="mongodb+srv://user:password@cluster.mongodb.net/attack_tree_db"
+   $env:GROQ_API_KEY="your_groq_api_key_here"
+   ```
+   
+   Or create a `.env` file in the project root:
    ```
    MONGO_URI=mongodb+srv://user:password@cluster.mongodb.net/attack_tree_db
-   LLM_API_KEY=your_api_key_here
-   LLM_MODEL=gpt-4
+   GROQ_API_KEY=your_groq_api_key_here
    ```
 
 ## Configuration
 
+### Environment Variables
+- **MONGO_URI**: MongoDB connection string (required)
+- **GROQ_API_KEY**: Groq API key for LLM access (required)
+
+### Code Configuration
 Edit `config.py` to customize:
-- LLM model selection (GPT-4, LLaMA, Claude)
-- MongoDB connection settings
-- Attack tree generation parameters (max_depth, etc.)
+- Attack tree generation parameters (`min`, `max` children per node)
+- Node hierarchies (surface_goal → attack_vector → method → technique)
 - Validation rule thresholds
 
 ## Usage
@@ -189,11 +196,17 @@ Validation results scored 0-100, configurable thresholds for approval.
 - **Database**: MongoDB
 - **LLM Integration**: OpenAI, Groq, Claude APIs
 - **Visualization**: HTML/D3.js
-- **Validation**: Custom rule engine
+Core dependencies:
+- **pydantic** - Data validation and modeling
+- **pymongo** - MongoDB database driver
+- **streamlit** - Web UI framework
+- **requests** - HTTP client for LLM API calls
+- **cvss** - CVSSv3 score calculation
 
-## Requirements
-
-See `requirements.txt` for complete dependencies. Main packages:
+Install with:
+```bash
+pip install streamlit pymongo pydantic requests cvss
+```lete dependencies. Main packages:
 - pydantic>=2.0
 - pymongo
 - streamlit

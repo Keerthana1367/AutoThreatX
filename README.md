@@ -5,6 +5,7 @@ An intelligent attack tree generation system for automotive cybersecurity threat
 ## Features
 
 - **Automated Attack Tree Generation** - Generate attack trees from surface goals using LLM integration
+- **CVSS Scoring** - Vulnerability assessment with CVSSv3 metrics for atomic attacks
 - **Hierarchical Attack Modeling** - Multi-level attack node representation with parent-child relationships
 - **Attack Node Atomicity** - Classify atomic vs composite attacks
 - **Persistent Storage** - MongoDB integration for tree persistence
@@ -22,13 +23,14 @@ ThreatX/
 ├── validator.py            # Attack tree validation
 ├── validation_rules.py     # Validation rule definitions
 ├── db.py                   # MongoDB database operations
+├── cvss.py                 # CVSSv3 score calculation utility
+├── config.py               # Configuration settings
 ├── models/
-│   ├── attacknode.py       # Attack node data model 
+│   ├── attacknode.py       # Attack node data model (Pydantic)
 │   └── __init__.py
 ├── llm/
-│   └── llm_client.py       # LLM API integration
-├── config.py               # Configuration settings
-├── visualize.html          # Attack tree visualization template
+│   └── llm_client.py       # Groq LLM API integration (LLaMA 3.1)
+├── visualize.html          # Attack tree visualization template (D3.js)
 └── venv/                   # Python virtual environment
 ```
 
@@ -168,16 +170,21 @@ Saves attack tree with timestamp to MongoDB.
 #### `get_all_surface_goals() -> List[str]`
 Retrieves all unique surface goals from database.
 
-## Validation
+## Validation & CVSS Scoring
 
 Attack trees are validated against rules in `validation_rules.py`:
 - **Node Completeness** - All required fields present
 - **Goal Clarity** - Well-defined, specific goals
-- **CVSS Validity** - Correct metric combinations
 - **Attack Feasibility** - Realistic automotive attacks
 - **Atomicity Check** - Proper leaf node classification
 
-Validation results scored 0-100, configurable thresholds for approval.
+**CVSS Scoring** (for atomic nodes only):
+- Calculated using `cvss.py` utility based on attack vector, complexity, and impact
+- Base scores range from 0.0 to 10.0
+- Applied only to terminal attack nodes (is_atomic = True)
+- Metrics: AV (Attack Vector), AC (Attack Complexity), PR (Privileges Required), UI (User Interaction), C/I/A (Confidentiality/Integrity/Availability)
+
+Validation results scored 0-4, minimum score of 3 for approval.
 
 ## Key Design Principles
 
@@ -192,23 +199,22 @@ Validation results scored 0-100, configurable thresholds for approval.
 - **Framework**: Python 3.9+
 - **Web UI**: Streamlit
 - **Data Model**: Pydantic v2
-- **Database**: MongoDB
-- **LLM Integration**: OpenAI, Groq, Claude APIs
+- **Database**: MongoDBGroq (LLaMA 3.1)
+- **CVSS Scoring**: CVSSv3 calculation engine
 - **Visualization**: HTML/D3.js
-Core dependencies:
+
+## Core Dependencies
+
 - **pydantic** - Data validation and modeling
 - **pymongo** - MongoDB database driver
 - **streamlit** - Web UI framework
 - **requests** - HTTP client for LLM API calls
-- **cvss** - CVSSv3 score calculation
+- **cvss** - CVSSv3 base score calculation
 
-Install with:
+Install all dependencies:
 ```bash
 pip install streamlit pymongo pydantic requests cvss
-```lete dependencies. Main packages:
-- pydantic>=2.0
-- pymongo
-- streamlit
+```
 - openai / groq (LLM providers)
 
 ## Academic Context

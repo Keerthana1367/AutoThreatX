@@ -1,4 +1,6 @@
-# AutoThreatX - Automotive Cybersecurity Attack Tree Generator
+# AutoThreatX - Automotive Cybersecurity Threat Validator
+
+
 
 An intelligent attack tree generation system for automotive cybersecurity threat modeling. AutoThreatX automatically generates comprehensive attack trees for surface goals using LLM-powered generation and provides validation, visualization, and persistent storage.
 

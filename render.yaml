@@ -1,0 +1,23 @@
+# Render deployment configuration
+# https://render.com/docs/render-yaml-reference
+
+services:
+  - type: web
+    name: auto-threat-modeler
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+
+    # Environment variables - set actual values in Render dashboard
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false        # means you must set it manually in Render dashboard
+      - key: MONGO_URI
+        sync: false        # means you must set it manually in Render dashboard
+
+    # Health check path
+    healthCheckPath: /_stcore/health
+
+    # Auto-deploy on git push
+    autoDeploy: true

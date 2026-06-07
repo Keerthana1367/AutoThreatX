@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.pyc
+
+# Virtual environments
+venv/
+env/
+.env
+.venv/
+
+# Secrets (NEVER commit these)
+.streamlit/secrets.toml
+.env
+
+# Excel outputs (generated files)
+*.xlsx
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+requirements_temp.txt

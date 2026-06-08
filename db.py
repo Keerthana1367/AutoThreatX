@@ -51,4 +51,6 @@ def save_tree(surface_goal: str, tree_json: dict):
     else:
         print("✅ Updated existing document")
 
-   
+def get_all_surface_goals():
+    """Retrieve all unique surface goals from the database."""
+    return trees.distinct("surface_goal")

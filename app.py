@@ -1,6 +1,6 @@
 import streamlit as st
 import json
-from db import get_tree
+from db import get_tree, get_all_surface_goals
 from main import generate_attack_tree
 # pyright: reportUndefinedVariable=false
 
@@ -83,10 +83,32 @@ st.markdown("---")
 
 # Main Input
 st.markdown("### Threat Modeling Target")
-SURFACE_GOAL = st.text_input(
-    "Enter the target ECU or subsystem to model:",
-    "Remote Keyless Entry (RKE) System Hacking"
+
+# Fetch existing goals from MongoDB
+existing_goals = get_all_surface_goals()
+existing_goals.sort()
+
+options = ["-- Select Existing Threat Model --", "+ Generate New Threat Model..."] + existing_goals
+
+selected_option = st.selectbox(
+    "Choose a target from the database or create a new one:",
+    options
 )
+
+SURFACE_GOAL = None
+
+if selected_option == "+ Generate New Threat Model...":
+    SURFACE_GOAL = st.text_input(
+        "Enter the new target ECU or subsystem to model:",
+        ""
+    )
+elif selected_option != "-- Select Existing Threat Model --":
+    SURFACE_GOAL = selected_option
+
+if not SURFACE_GOAL:
+    st.info("👈 Please select or enter a threat modeling target to begin.")
+    st.stop()
+
 st.markdown("---")
 
 # Fetch Tree
